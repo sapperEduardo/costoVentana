@@ -71,16 +71,19 @@ class Calcular_precio:
         self.in_ancho.place(relx=.44, rely=.2, relheight=.07, relwidth=.3, anchor='w')
         self.in_alto = tk.Entry(self.root, font=self.fuente, textvariable=self.alto, justify='center')
         self.in_alto.place(relx=.44, rely=.35, relheight=.07, relwidth=.3, anchor='w')
-        self.in_alto = tk.Entry(self.root, font=self.fuente, textvariable=self.nivel_calidad, justify='center')
-        self.in_alto.place(relx=.44, rely=.5, relheight=.07, relwidth=.15, anchor='w')
         
+        self.nivel1 = tk.Radiobutton(self.root, text='nivel 1', font=self.fuente, variable=self.nivel_calidad, value=1).place(relx=.44, rely=.5, relheight=.08, relwidth=.25, anchor='w')
+        self.nivel1 = tk.Radiobutton(self.root, text='nivel 2', font=self.fuente, variable=self.nivel_calidad, value=2).place(relx=.44, rely=.58, relheight=.08, relwidth=.25, anchor='w')
+        self.nivel1 = tk.Radiobutton(self.root, text='nivel 3', font=self.fuente, variable=self.nivel_calidad, value=3).place(relx=.44, rely=.66, relheight=.08, relwidth=.25, anchor='w')
+
+
         self.b_calcular = tk.Button(self.root, text='Calcular', font='arial 13', command=self.calcular_precio)
-        self.b_calcular.place(anchor='center', relx=.5, rely=.75, relheight=.08, relwidth=.3)
+        self.b_calcular.place(anchor='center', relx=.5, rely=.78, relheight=.08, relwidth=.3)
 
         self.label_precio = tk.Label(self.root, text='Precio:', font=self.fuente)
-        self.label_precio.place(anchor= 'center', rely=.85, relx=.3)
+        self.label_precio.place(anchor= 'center', rely=.88, relx=.3)
         self.label_precio = tk.Label(self.root, textvariable=self.precio, font=self.fuente)
-        self.label_precio.place(anchor='center', rely=.85, relx=.6)
+        self.label_precio.place(anchor='center', rely=.88, relx=.6)
 
         self.root.mainloop()
 

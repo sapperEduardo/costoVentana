@@ -19,7 +19,7 @@ class Conexion:
                                         'DATABASE='+self.db+';'+
                                         'UID='+self.user+';'+
                                         'PWD='+self.password+';')
-        # self.cursor = self.coneccion.cursor()
+        
     def cerrar_coneccion(self):
         self.coneccion.close()
 
