@@ -1,0 +1,33 @@
+
+Historias de usuario:
+
+-Calcular el precio de una ventana de aluminio simple, en base a 
+sus medidas (ancho y alto) y su calidad.
+	Primero tengo que ingresar el ancho y el alto en metros, que por defecto tendran valores de 1.
+	Luego selecciono la calidad del aluminio (economica, reforzada) que por defecto estará en economica.
+	Por ultimo, quiero ver el precio al apretar un boton de "Calcular".
+	-Lviana: aluminio liviano y vidrio 3mm
+	-Reforzada: aluminio pesado y vidrio 4mm
+
+
+-Ver los precios de 4 medidas tipicas como:
+ -1*1 
+ -1.2*1
+ -1.2*1.2		
+
+-Configurar o cambiar el precio de:
+  -kg de aluminio
+  -mts^2 del vidrio de 3mm y 4mm
+  -metro de burlete
+  -metro de felpa
+  -unidad de remaches
+  -unidad de tornillos
+  -unidad de escuadras
+  -unidad de cierres
+  -unidad de ruedas
+  
+
+
+
+
+
