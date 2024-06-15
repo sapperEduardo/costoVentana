@@ -87,10 +87,9 @@ class Principal:
 
 
 class Precios:
-    def __init__(self, root, insumos_precios, controlador):
+    def __init__(self, root, controlador):
         self.root = root
         self.controlador = controlador
-        self.insumos_precios = insumos_precios
         self.entries = []
 
         # frame principal
@@ -138,10 +137,13 @@ class Precios:
     def ocultar(self):
         self.frame.forget()
 
-    def cargar_filas(self):
+    def cargar_filas(self, insumos):
             self.entries = []  # Lista para almacenar referencias a los campos de entrada
-            for i, (insumo, precio) in enumerate(self.insumos_precios):
-                label = tk.Label(self.frame_in_canvas, text=insumo, font='arial 12', bg='white', width=20)
+            for i, insumo in enumerate(insumos):
+                nombre = insumo.getNombre()
+                precio = insumo.getPrecio()
+                
+                label = tk.Label(self.frame_in_canvas, text=nombre, font='arial 12', bg='white', width=20)
                 label.grid(row=i, column=0, padx=10, pady=5, sticky='w')
                 
                 entry = tk.Entry(self.frame_in_canvas, font='arial 12', justify='right', width=14, bg='gray85')
@@ -149,20 +151,13 @@ class Precios:
                 entry.grid(row=i, column=1, padx=10, pady=5, sticky='e')
                 
                 self.entries.append(entry)
-    
-    def guardar_precios(self):
-        l = self.insumos_precios
-        for i in range(len(self.insumos_precios)):
-            try:
-                nuevo_precio = float( self.entries[i].get() )    
-            except ValueError: continue
-            l[i] = (l[i][0], nuevo_precio)
 
-        self.insumos_precios = l
-    
-    def get_lista_precios(self):
-        return self.insumos_precios
-
+    def getPrecios(self):
+        precios = []
+        for entrada in self.entries:
+            precios.append( entrada.get() )
+        return precios
+        
 
 
     def _on_mousewheel(self, event):

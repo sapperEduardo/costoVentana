@@ -1,5 +1,7 @@
 import tkinter as tk
-from modelo import obtener_lista_precios, guardar_precios
+
+from modelo import Coneccion
+from modelo import obtener_insumos
 from modelo import Ventana
 from vista import Principal, Precios
 
@@ -7,7 +9,7 @@ from vista import Principal, Precios
 eco = lambda x, y: Ventana(x,y,1).calcularPrecio()
 refor = lambda x, y: Ventana(x,y,2).calcularPrecio()
 
-precios_comunes = [
+precios_ventanas_comunes = [
     (1,1,eco(1,1),refor(1,1)),
     (1.2,1,eco(1.2,1),refor(1.2,1)),
     (1,1.2,eco(1,1.2),refor(1,1.2)),
@@ -16,17 +18,18 @@ precios_comunes = [
     (1.5,1.5,eco(1.5,1.5),refor(1.5,1.5)),
 ]
 
-insumos_precios = obtener_lista_precios()
+    
+
 
 
 class Controlador:
-    def __init__(self, root, matriz_precios):
+    def __init__(self, root, precios_comunes):
         self.root = root
-        self.matriz_precios = matriz_precios
+        self.precios_comunes = precios_comunes
+        self.insumos = obtener_insumos()
 
-        self.principal = Principal(root, self.matriz_precios, self)
-        self.precios = Precios(self.root, insumos_precios, self)
-
+        self.principal = Principal(root, self.precios_comunes, self)
+        self.precios = Precios(self.root, self)
 
     
     def mostrar_pantalla_principal(self):
@@ -35,7 +38,7 @@ class Controlador:
 
     def mostrar_pantalla_precios(self):
         self.principal.ocultar()
-        self.precios.cargar_filas()
+        self.precios.cargar_filas(self.insumos)
         self.precios.mostrar()
 
     def calcular_costo(self):
@@ -46,21 +49,29 @@ class Controlador:
 
 
     def guardar_precios(self):
-        self.precios.guardar_precios()
-        l = self.precios.get_lista_precios()
-        guardar_precios(l)
+        precios = self.precios.getPrecios()
+        l = len(precios)
+        for i in range(l):
+            try:
+                p = float(precios[i])
+                self.insumos[i].actualizarPrecio(p)
+            except: 
+                continue
+        Coneccion().guardar_datos()
 
+    def actualizar_lista_precios_insumos(self):
+        for insumo in obtener_insumos():
+            insumo.cargarPrecio()
 
 
 
 def main():
     ventana = tk.Tk()
-    ventana.iconbitmap('C:\\Users\\sebas\\OneDrive\\Documentos\\desk_venv\\Proyects\\costoVentana\\icono.ico')
     ventana.title('costoVentana')
     ventana.geometry('400x470')
     ventana.resizable(False,False)
 
-    Ctr = Controlador(ventana, precios_comunes)
+    Ctr = Controlador(ventana, precios_ventanas_comunes)
     Ctr.mostrar_pantalla_principal()
 
 

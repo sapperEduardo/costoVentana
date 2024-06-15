@@ -1,67 +1,73 @@
 import json
 
-Datos = {}
+class Coneccion:
+    _instances = {}    
+    Datos = {}
 
-def cargar_datos():
-    global Datos
-    with open('datos.json', 'r') as f:
-        Datos = json.load(f)
-
-def guardar_datos():
-    global Datos
-    with open('datos.json', 'w') as f:
-        json.dump(Datos, f, indent=1)
-
-def obtener_precio(codigo):
-    global Datos
-    for insumo in Datos["insumos"]:
-        if codigo == insumo["codigo"]:
-            return insumo["precio"]
+    def __new__(cls):
+        if cls not in cls._instances:
+            cls._instances[cls] = super().__new__(cls)
+            cls.cargar_datos(cls)
+        return cls._instances[cls]
     
+    ### metodos basicos de la coneccion ###
+    def cargar_datos(cls):
+        with open('datos.json', 'r') as f:
+            cls.Datos = json.load(f)
+    def guardar_datos(cls):
+        with open('datos.json', 'w') as f:
+            json.dump(cls.Datos, f, indent=1)
 
-def actualizar_precio_kg_aluminio(nuevo_precio_kg_aluminio):
-    global Datos
-    Datos['precio_kg_aluminio'] = nuevo_precio_kg_aluminio
+    ### metodos para obtener precios de los distintos insumos ###
+    def obtenerPrecioAluminio(cls):
+        return cls.Datos["precio_kg_aluminio"]
 
-def actualizar_precio_insumo(codigo, nuevo_precio):
-    global Datos
-    for insumo in Datos['insumos']:
-        if insumo['codigo'] == codigo:
-            insumo['precio'] = nuevo_precio
-            break
 
-def actualizar_precio_vidrio(codigo, calidad, nuevo_precio):
-    global Datos
-    for insumo in Datos['insumos']:
-        if insumo['codigo'] == codigo and insumo['calidad'] == calidad:
-            insumo['precio'] = nuevo_precio
-            break
+    def obtenerPrecio(cls, codigo):
+        for insumo in cls.Datos["insumos"]:
+            if codigo == insumo["codigo"]:
+                return insumo["precio"]
+            
+    def obtenerPrecioPerfil(cls, codigo, calidad):
+        for p in cls.Datos["perfiles_aluminio"]:
+            if codigo == p["codigo"] and calidad == p["calidad"]: 
+                return p["kg/mts"] * cls.Datos["precio_kg_aluminio"]
 
-def obtener_lista_precios():
-    global Datos
-    if Datos == None: cargar_datos()
-    lista = []
-    lista.append( ("precio kg aluminio", float(Datos["precio_kg_aluminio"]) )  )
-    
-    for insumo in Datos["insumos"]:
-        lista.append( ( insumo["nombre"], float( insumo["precio"] ) ) )
+    def obtenerPrecioVidrio(cls, calidad):
+        for insumo in cls.Datos["insumos"]:
+            if 202 == insumo["codigo"] and calidad == insumo["calidad"]: 
+                return insumo["precio"]
+    def obtenerNombreVidrio(cls, calidad):
+        for insumo in cls.Datos["insumos"]:
+            if 202 == insumo["codigo"] and calidad == insumo["calidad"]: 
+                return insumo["nombre"]
+            
+    ### metodos para actualizar precios de los insumos ###
+    def actualizarPrecioAluminio(cls, nuevo_precio_kg_aluminio):
+        cls.Datos['precio_kg_aluminio'] = nuevo_precio_kg_aluminio
 
-    return lista
+    def actualizarPrecioInsumo(cls, codigo, nuevo_precio):
+        for insumo in cls.Datos['insumos']:
+            if insumo['codigo'] == codigo:
+                insumo['precio'] = nuevo_precio
+                break
 
-def guardar_precios(lista):
-    global Datos
-    if Datos == None: cargar_datos()
-    actualizar_precio_kg_aluminio(lista[0][1])
-    actualizar_precio_insumo(200, lista[1][1])
-    actualizar_precio_insumo(201, lista[2][1])
-    actualizar_precio_vidrio(202, 1, lista[3][1])
-    actualizar_precio_vidrio(202, 2, lista[4][1])
+    def actualizarPrecioVidrio(cls, codigo, calidad, nuevo_precio):
+        for insumo in cls.Datos['insumos']:
+            if insumo['codigo'] == codigo and insumo['calidad'] == calidad:
+                insumo['precio'] = nuevo_precio
+                break
 
-    for c, tupla in zip( range(203,2010), lista[5:]):
-        precio = tupla[1]
-        actualizar_precio_insumo(c, precio)
 
-    guardar_datos()
+
+
+
+def obtener_insumos():
+    return [Aluminio(), Felpa(), Burlete(), Vidrio(1), Vidrio(2), Cierre(), Rueda(),
+             Tirafondo(), Escuadra(), Remache(), AntiRuido(), ParTJ()]
+
+
+
 
 
 ## clases de insumos ##
@@ -70,9 +76,32 @@ class Insumo:
         self.codigo = 0
         self.nombre = ''
         self.calidad = 1
+        self.precio = 0
+        
+
+    def cargarPrecio(self):
+        self.precio = Coneccion().obtenerPrecio(self.codigo)
+    def getNombre(self):
+        return self.nombre
+    def getPrecio(self):
+        return self.precio
     
     def actualizarPrecio(self, nuevo_precio):
-        actualizar_precio_insumo(self.codigo, nuevo_precio)
+        self.precio = nuevo_precio
+        Coneccion().actualizarPrecioInsumo(self.codigo, self.precio)
+
+class Aluminio(Insumo):
+    def __init__(self):
+        super().__init__()
+        self.nombre = 'Kg de Aluminio'
+        self.cargarPrecio()
+
+    def cargarPrecio(self):
+        self.precio = Coneccion().obtenerPrecioAluminio()
+    def actualizarPrecio(self, nuevo_precio):
+        self.precio = nuevo_precio
+        Coneccion().actualizarPrecioAluminio(self.precio)
+
 
 class InsumoMts(Insumo):
     def __init__(self, metros):
@@ -80,7 +109,8 @@ class InsumoMts(Insumo):
         self.metros = metros
 
     def calcularPrecio(self):
-        return obtener_precio(self.codigo) * self.metros
+        self.cargarPrecio() 
+        return self.precio * self.metros
 
 class InsumoCntd(Insumo):
     def __init__(self, cantidad):
@@ -88,7 +118,8 @@ class InsumoCntd(Insumo):
         self.cantidad = cantidad
 
     def calcularPrecio(self):
-        return obtener_precio(self.codigo) * self.cantidad
+        self.cargarPrecio() 
+        return self.precio * self.cantidad
 
 ## clases de insumos dependientes de metros ##
 class Perfil(InsumoMts):
@@ -97,40 +128,46 @@ class Perfil(InsumoMts):
         self.calidad = calidad
         self.codigo = codigo
 
-    def calcularPrecio(self):
-        global Datos
-        for p in Datos["perfiles_aluminio"]:
-            if self.codigo == p["codigo"] and self.calidad == p["calidad"]: 
-                return p["kg/mts"] * self.metros * Datos["precio_kg_aluminio"]
-        return None
+    def cargarPrecio(self):
+        self.precio = Coneccion().obtenerPrecioPerfil(self.codigo, self.calidad)
+    
 
 class Felpa(InsumoMts):
     def __init__(self, metros=1):
         super().__init__(metros)
         self.codigo = 200
         self.nombre = 'felpa'
+        self.cargarPrecio()
 
 class Burlete(InsumoMts):
     def __init__(self, metros=1):
         super().__init__(metros)
         self.codigo = 201
         self.nombre = 'burlete'
+        self.cargarPrecio()
 
 class Vidrio(InsumoMts):
     def __init__(self, calidad, metros=1):
         super().__init__(metros)
         self.calidad = calidad
         self.codigo = 202
+        self.cargarNombre()
+        self.cargarPrecio()
 
-    def calcularPrecio(self):
-        global Datos
-        for insumo in Datos["insumos"]:
-            if self.codigo == insumo["codigo"] and self.calidad == insumo["calidad"]: 
-                return insumo["precio"] * self.metros
-        
+    def cargarNombre(self):
+        self.nombre = Coneccion().obtenerNombreVidrio(self.calidad)
+
+    def cargarPrecio(self):
+        self.precio = Coneccion().obtenerPrecioVidrio(self.calidad)
             
+    def calcularPrecio(self):
+        self.cargarPrecio()
+        return self.precio * self.metros
+        
     def actualizarPrecio(self, nuevo_precio):
-        actualizar_precio_vidrio(self.codigo, self.calidad, nuevo_precio)
+        self.precio = nuevo_precio
+        Coneccion().actualizarPrecioVidrio(self.codigo, self.calidad, self.precio)
+
 
 ## clases de insumos dependientes de una cantidad ##
 class Cierre(InsumoCntd):
@@ -138,42 +175,49 @@ class Cierre(InsumoCntd):
         super().__init__(cantidad)
         self.codigo = 203
         self.nombre = 'cierre central'
+        self.cargarPrecio()
 
 class Rueda(InsumoCntd):
     def __init__(self, cantidad=1):
         super().__init__(cantidad)
         self.codigo = 204
         self.nombre = 'rueda'
+        self.cargarPrecio()
 
 class Tirafondo(InsumoCntd):
     def __init__(self, cantidad=1):
         super().__init__(cantidad)
         self.codigo = 205
         self.nombre = 'tirafondo'
+        self.cargarPrecio()
 
 class Escuadra(InsumoCntd):
     def __init__(self, cantidad=1):
         super().__init__(cantidad)
         self.codigo = 206
         self.nombre = 'escuadra'
+        self.cargarPrecio()
 
 class Remache(InsumoCntd):
     def __init__(self, cantidad=1):
         super().__init__(cantidad)
         self.codigo = 207
         self.nombre = 'remache'
+        self.cargarPrecio()
 
 class AntiRuido(InsumoCntd):
     def __init__(self, cantidad=1):
         super().__init__(cantidad)
         self.codigo = 208
         self.nombre = 'Anti-ruido'
+        self.cargarPrecio()
 
 class ParTJ(InsumoCntd):
     def __init__(self, cantidad=1):
         super().__init__(cantidad)
         self.codigo = 209
         self.nombre = 'Par T-J'
+        self.cargarPrecio()
 
 ## clases del modelo de la ventana ##
 class Hoja:
@@ -181,7 +225,7 @@ class Hoja:
         self.ancho = ancho
         self.alto = alto
         self.calidad = calidad
-        self.metros_vidrio = (self.ancho - .08)*(self.alto - .08)
+        self.metros_vidrio = (self.ancho + .02)*(self.alto - .08)
         self.perfiles = Perfil(self.calidad, self.ancho*2, 1002), Perfil(self.calidad, self.alto, 1003), Perfil(self.calidad, self.alto, 1004)
         self.tirafondo = Tirafondo(4)
         self.rueda = Rueda(2)
@@ -230,6 +274,5 @@ class Ventana:
         self.marco = Marco(self.ancho, self.alto, self.calidad)
     
     def calcularPrecio(self):
-        cargar_datos()
         return round( self.marco.calcularPrecio() + self.cierre.calcularPrecio(), 2)
 
