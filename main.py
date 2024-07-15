@@ -67,6 +67,10 @@ class Controlador:
 
 def main():
     ventana = tk.Tk()
+    
+    try: ventana.iconbitmap('_internal\\icono.ico')
+    except: pass
+
     ventana.title('costoVentana')
     ventana.geometry('400x470')
     ventana.resizable(False,False)

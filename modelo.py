@@ -1,27 +1,52 @@
-import json
+import os, sys, json
+
 
 class Coneccion:
     _instances = {}    
     Datos = {}
+    rute = "C:\\Users\\sebas\\OneDrive\\Documentos\\desk_venv\\Proyects\\costoVentana\\datos.json"
 
     def __new__(cls):
         if cls not in cls._instances:
             cls._instances[cls] = super().__new__(cls)
             cls.cargar_datos(cls)
+
         return cls._instances[cls]
     
     ### metodos basicos de la coneccion ###
+    
     def cargar_datos(cls):
-        with open('datos.json', 'r') as f:
-            cls.Datos = json.load(f)
+        try:
+            if getattr(sys, 'frozen', False):  # Si se ejecuta como un .exe
+                base_path = sys._MEIPASS
+            else:
+                base_path = os.path.dirname(__file__)
+            
+            file_path = os.path.join(base_path, 'datos.json')
+            with open(file_path, 'r') as f:
+                cls.Datos = json.load(f)
+        except FileNotFoundError:
+            print("Error: No se encontró el archivo 'datos.json'.")
+            cls.Datos = {}
+
+    
     def guardar_datos(cls):
-        with open('datos.json', 'w') as f:
-            json.dump(cls.Datos, f, indent=1)
+        try:
+            if getattr(sys, 'frozen', False):  # Si se ejecuta como un .exe
+                base_path = sys._MEIPASS
+            else:
+                base_path = os.path.dirname(__file__)
+                
+            file_path = os.path.join(base_path, 'datos.json')
+            with open(file_path, 'w') as f:
+                json.dump(cls.Datos, f, indent=1)
+        except Exception as e:
+            print(f"Error al guardar datos: {e}")
+
 
     ### metodos para obtener precios de los distintos insumos ###
     def obtenerPrecioAluminio(cls):
         return cls.Datos["precio_kg_aluminio"]
-
 
     def obtenerPrecio(cls, codigo):
         for insumo in cls.Datos["insumos"]:
