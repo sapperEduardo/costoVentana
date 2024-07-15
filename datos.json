@@ -1,0 +1,121 @@
+{
+ "precio_kg_aluminio": 7900.0,
+ "insumos": [
+  {
+   "codigo": 200,
+   "nombre": "felpa",
+   "calidad": 1,
+   "precio": 110.0
+  },
+  {
+   "codigo": 201,
+   "nombre": "burlete",
+   "calidad": 1,
+   "precio": 350.0
+  },
+  {
+   "codigo": 202,
+   "nombre": "vidrio 3mm",
+   "calidad": 1,
+   "precio": 14000.0
+  },
+  {
+   "codigo": 202,
+   "nombre": "vidrio 4mm",
+   "calidad": 2,
+   "precio": 17000.0
+  },
+  {
+   "codigo": 203,
+   "nombre": "cierre central",
+   "calidad": 1,
+   "precio": 600.0
+  },
+  {
+   "codigo": 204,
+   "nombre": "rueda",
+   "calidad": 1,
+   "precio": 250.0
+  },
+  {
+   "codigo": 205,
+   "nombre": "tirafondo",
+   "calidad": 1,
+   "precio": 3.0
+  },
+  {
+   "codigo": 206,
+   "nombre": "escuadra",
+   "calidad": 1,
+   "precio": 1.0
+  },
+  {
+   "codigo": 207,
+   "nombre": "remache",
+   "calidad": 1,
+   "precio": 1.0
+  },
+  {
+   "codigo": 208,
+   "nombre": "Anti-Ruido",
+   "calidad": 1,
+   "precio": 1.0
+  },
+  {
+   "codigo": 209,
+   "nombre": "Par T-J",
+   "calidad": 1,
+   "precio": 1.0
+  }
+ ],
+ "perfiles_aluminio": [
+  {
+   "codigo": 1001,
+   "nombre": "Marco Liviano",
+   "calidad": 1,
+   "kg/mts": 0.583
+  },
+  {
+   "codigo": 1002,
+   "nombre": "Dintel y Umbral",
+   "calidad": 1,
+   "kg/mts": 0.4
+  },
+  {
+   "codigo": 1003,
+   "nombre": "Parante Lateral",
+   "calidad": 1,
+   "kg/mts": 0.4
+  },
+  {
+   "codigo": 1004,
+   "nombre": "Parante Central",
+   "calidad": 1,
+   "kg/mts": 0.4
+  },
+  {
+   "codigo": 1001,
+   "nombre": "Marco Pesado",
+   "calidad": 2,
+   "kg/mts": 0.75
+  },
+  {
+   "codigo": 1002,
+   "nombre": "Dintel y Umbral",
+   "calidad": 2,
+   "kg/mts": 0.43
+  },
+  {
+   "codigo": 1003,
+   "nombre": "Parante Lateral",
+   "calidad": 2,
+   "kg/mts": 0.43
+  },
+  {
+   "codigo": 1004,
+   "nombre": "Parante Central",
+   "calidad": 2,
+   "kg/mts": 0.43
+  }
+ ]
+}

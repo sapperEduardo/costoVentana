@@ -1,198 +1,303 @@
-import pyodbc
+import os, sys, json
 
 
-consulta_precio_perfil = lambda n, n_c: f"select precio/metros from Insumos where nombre = '{n}' and nivel_calidad = {n_c}"
-consulta_precio_porcantidad = lambda n: f"select precio/cantidad from Insumos where nombre = '{n}'"
-consulta_precio_pormetro = lambda n: f"select precio/metros from Insumos where nombre = '{n}'"
+class Coneccion:
+    _instances = {}    
+    Datos = {}
+    rute = "C:\\Users\\sebas\\OneDrive\\Documentos\\desk_venv\\Proyects\\costoVentana\\datos.json"
+
+    def __new__(cls):
+        if cls not in cls._instances:
+            cls._instances[cls] = super().__new__(cls)
+            cls.cargar_datos(cls)
+
+        return cls._instances[cls]
+    
+    ### metodos basicos de la coneccion ###
+    
+    def cargar_datos(cls):
+        try:
+            if getattr(sys, 'frozen', False):  # Si se ejecuta como un .exe
+                base_path = sys._MEIPASS
+            else:
+                base_path = os.path.dirname(__file__)
+            
+            file_path = os.path.join(base_path, 'datos.json')
+            with open(file_path, 'r') as f:
+                cls.Datos = json.load(f)
+        except FileNotFoundError:
+            print("Error: No se encontró el archivo 'datos.json'.")
+            cls.Datos = {}
+
+    
+    def guardar_datos(cls):
+        try:
+            if getattr(sys, 'frozen', False):  # Si se ejecuta como un .exe
+                base_path = sys._MEIPASS
+            else:
+                base_path = os.path.dirname(__file__)
+                
+            file_path = os.path.join(base_path, 'datos.json')
+            with open(file_path, 'w') as f:
+                json.dump(cls.Datos, f, indent=1)
+        except Exception as e:
+            print(f"Error al guardar datos: {e}")
 
 
-class Conexion:
+    ### metodos para obtener precios de los distintos insumos ###
+    def obtenerPrecioAluminio(cls):
+        return cls.Datos["precio_kg_aluminio"]
+
+    def obtenerPrecio(cls, codigo):
+        for insumo in cls.Datos["insumos"]:
+            if codigo == insumo["codigo"]:
+                return insumo["precio"]
+            
+    def obtenerPrecioPerfil(cls, codigo, calidad):
+        for p in cls.Datos["perfiles_aluminio"]:
+            if codigo == p["codigo"] and calidad == p["calidad"]: 
+                return p["kg/mts"] * cls.Datos["precio_kg_aluminio"]
+
+    def obtenerPrecioVidrio(cls, calidad):
+        for insumo in cls.Datos["insumos"]:
+            if 202 == insumo["codigo"] and calidad == insumo["calidad"]: 
+                return insumo["precio"]
+    def obtenerNombreVidrio(cls, calidad):
+        for insumo in cls.Datos["insumos"]:
+            if 202 == insumo["codigo"] and calidad == insumo["calidad"]: 
+                return insumo["nombre"]
+            
+    ### metodos para actualizar precios de los insumos ###
+    def actualizarPrecioAluminio(cls, nuevo_precio_kg_aluminio):
+        cls.Datos['precio_kg_aluminio'] = nuevo_precio_kg_aluminio
+
+    def actualizarPrecioInsumo(cls, codigo, nuevo_precio):
+        for insumo in cls.Datos['insumos']:
+            if insumo['codigo'] == codigo:
+                insumo['precio'] = nuevo_precio
+                break
+
+    def actualizarPrecioVidrio(cls, codigo, calidad, nuevo_precio):
+        for insumo in cls.Datos['insumos']:
+            if insumo['codigo'] == codigo and insumo['calidad'] == calidad:
+                insumo['precio'] = nuevo_precio
+                break
+
+
+
+
+
+def obtener_insumos():
+    return [Aluminio(), Felpa(), Burlete(), Vidrio(1), Vidrio(2), Cierre(), Rueda(),
+             Tirafondo(), Escuadra(), Remache(), AntiRuido(), ParTJ()]
+
+
+
+
+
+## clases de insumos ##
+class Insumo:
     def __init__(self):
-        self.server = 'DESKTOP-1VRJ5PA\\MSSQLSERVER01' 
-        self.db = 'Aberturas'
-        self.user = 'ventana'
-        self.password = '123'
+        self.codigo = 0
+        self.nombre = ''
+        self.calidad = 1
+        self.precio = 0
         
-    def establecer_coneccion(self):
-        self.coneccion = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL server}; '+
-                                        'SERVER='+self.server+';'+
-                                        'DATABASE='+self.db+';'+
-                                        'UID='+self.user+';'+
-                                        'PWD='+self.password+';')
-        # self.cursor = self.coneccion.cursor()
-    def cerrar_coneccion(self):
-        self.coneccion.close()
 
-
-    def precio_pmetro_perfil(self, nombre, nivel_calidad):
-        precio = self.coneccion.execute(consulta_precio_perfil(nombre, nivel_calidad)).fetchone()[0]
-        return float( round(precio, 4) )
-
-    def precio_pcantidad(self, nombre):
-        precio = self.coneccion.execute(consulta_precio_porcantidad(nombre)).fetchone()[0]
-        return float( round(precio, 4) )
-
-    def precio_pmetro(self, nombre):
-        precio = self.coneccion.execute(consulta_precio_pormetro(nombre)).fetchone()[0]
-        return float( round(precio, 4) )    
+    def cargarPrecio(self):
+        self.precio = Coneccion().obtenerPrecio(self.codigo)
+    def getNombre(self):
+        return self.nombre
+    def getPrecio(self):
+        return self.precio
     
-    # def obtener_fila(self, nombre):
-    #     return self.coneccion.execute(f"select TOP 1 * from Insumos where nombre = '{nombre}'").fetchone()
+    def actualizarPrecio(self, nuevo_precio):
+        self.precio = nuevo_precio
+        Coneccion().actualizarPrecioInsumo(self.codigo, self.precio)
 
-    # def obtener_perfil(self, nombre, n_c):
-    #     return self.coneccion.execute(f"select TOP 1 * from Insumos where nombre = '{nombre}' and nivel_calidad = '{n_c}'").fetchone()
+class Aluminio(Insumo):
+    def __init__(self):
+        super().__init__()
+        self.nombre = 'Kg de Aluminio'
+        self.cargarPrecio()
 
-    def obtener_tabla(self):
-        return self.coneccion.execute('select * from Insumos').fetchall()
-
-
-    def actualizar_perfil(self, nombre, n_c, metros, precio):
-        try:
-            metros, precio  =  float(metros), float(precio) 
-            self.coneccion.execute(f"update Insumos set metros = {metros}, precio = {precio} WHERE nombre = '{nombre}' and nivel_calidad = {int(n_c)}")
-            self.coneccion.commit()
-        except:
-            ValueError
-    
-    def actualizar_por_metros(self, nombre, metros, precio):
-        try:
-            metros, precio = float(metros), float(precio)
-            self.coneccion.execute(f"update Insumos set metros = {metros}, precio = {precio} WHERE nombre = '{nombre}'")
-            self.coneccion.commit()
-        except:
-            ValueError
-    
-    def actualizar_por_cantidad(self, nombre, cantidad, precio):
-        try:
-            cantidad, precio = float(cantidad), float(precio)
-            self.coneccion.execute(f"update Insumos set cantidad = {cantidad}, precio = {precio} WHERE nombre = '{nombre}'")
-            self.coneccion.commit()
-        except:
-            ValueError
+    def cargarPrecio(self):
+        self.precio = Coneccion().obtenerPrecioAluminio()
+    def actualizarPrecio(self, nuevo_precio):
+        self.precio = nuevo_precio
+        Coneccion().actualizarPrecioAluminio(self.precio)
 
 
-
-conn = Conexion()
-
-conn.establecer_coneccion()
-
-
-
-
-
-class Burlete:
+class InsumoMts(Insumo):
     def __init__(self, metros):
-        self.nombre = 'burlete'
+        super().__init__()
         self.metros = metros
-    def calcular_precio(self):
-        return conn.precio_pmetro(self.nombre) * self.metros
 
-class Felpa:
-    def __init__(self, metros):
+    def calcularPrecio(self):
+        self.cargarPrecio() 
+        return self.precio * self.metros
+
+class InsumoCntd(Insumo):
+    def __init__(self, cantidad):
+        super().__init__()
+        self.cantidad = cantidad
+
+    def calcularPrecio(self):
+        self.cargarPrecio() 
+        return self.precio * self.cantidad
+
+## clases de insumos dependientes de metros ##
+class Perfil(InsumoMts):
+    def __init__(self, calidad, metros, codigo):
+        super().__init__(metros)
+        self.calidad = calidad
+        self.codigo = codigo
+
+    def cargarPrecio(self):
+        self.precio = Coneccion().obtenerPrecioPerfil(self.codigo, self.calidad)
+    
+
+class Felpa(InsumoMts):
+    def __init__(self, metros=1):
+        super().__init__(metros)
+        self.codigo = 200
         self.nombre = 'felpa'
-        self.metros = metros
-    def calcular_precio(self):
-        return conn.precio_pmetro(self.nombre) * self.metros
+        self.cargarPrecio()
 
-class Escuadra:
-    def __init__(self, cantidad):
-        self.nombre = 'escuadra'
-        self.cantidad = cantidad
-    def calcular_precio(self):
-        return conn.precio_pcantidad(self.nombre) * self.cantidad
+class Burlete(InsumoMts):
+    def __init__(self, metros=1):
+        super().__init__(metros)
+        self.codigo = 201
+        self.nombre = 'burlete'
+        self.cargarPrecio()
 
-class Remache:
-    def __init__(self, cantidad):
-        self.nombre = 'remache'
-        self.cantidad = cantidad
-    def calcular_precio(self):
-        return conn.precio_pcantidad(self.nombre) * self.cantidad
+class Vidrio(InsumoMts):
+    def __init__(self, calidad, metros=1):
+        super().__init__(metros)
+        self.calidad = calidad
+        self.codigo = 202
+        self.cargarNombre()
+        self.cargarPrecio()
 
-class Rueda:
-    def __init__(self, cantidad):
-        self.nombre = 'rueda'
-        self.cantidad = cantidad
-    def calcular_precio(self):
-        return conn.precio_pcantidad(self.nombre) * self.cantidad
+    def cargarNombre(self):
+        self.nombre = Coneccion().obtenerNombreVidrio(self.calidad)
 
-
-class Tirafondo:
-    def __init__(self, cantidad):
-        self.nombre = 'tirafondo'   
-        self.cantidad = cantidad
-    def calcular_precio(self):
-        return conn.precio_pcantidad(self.nombre) * self.cantidad
-
-
-class Panel_vidrio:
-    def __init__(self, metrosC):
-        self.nombre = 'vidrio'
-        self.metrosC = metrosC
-    def calcular_precio(self):
-        return conn.precio_pmetro(self.nombre) * self.metrosC
-
-class Perfil:
-    def __init__(self, tipo, nive_calidad, metros):
-        self.tipo = tipo
-        self.nivel_calidad = nive_calidad
-        self.metros = metros
+    def cargarPrecio(self):
+        self.precio = Coneccion().obtenerPrecioVidrio(self.calidad)
+            
+    def calcularPrecio(self):
+        self.cargarPrecio()
+        return self.precio * self.metros
         
-    def calcular_precio(self):
-        return conn.precio_pmetro_perfil(self.tipo, self.nivel_calidad) * self.metros
-    
+    def actualizarPrecio(self, nuevo_precio):
+        self.precio = nuevo_precio
+        Coneccion().actualizarPrecioVidrio(self.codigo, self.calidad, self.precio)
 
+
+## clases de insumos dependientes de una cantidad ##
+class Cierre(InsumoCntd):
+    def __init__(self, cantidad=1):
+        super().__init__(cantidad)
+        self.codigo = 203
+        self.nombre = 'cierre central'
+        self.cargarPrecio()
+
+class Rueda(InsumoCntd):
+    def __init__(self, cantidad=1):
+        super().__init__(cantidad)
+        self.codigo = 204
+        self.nombre = 'rueda'
+        self.cargarPrecio()
+
+class Tirafondo(InsumoCntd):
+    def __init__(self, cantidad=1):
+        super().__init__(cantidad)
+        self.codigo = 205
+        self.nombre = 'tirafondo'
+        self.cargarPrecio()
+
+class Escuadra(InsumoCntd):
+    def __init__(self, cantidad=1):
+        super().__init__(cantidad)
+        self.codigo = 206
+        self.nombre = 'escuadra'
+        self.cargarPrecio()
+
+class Remache(InsumoCntd):
+    def __init__(self, cantidad=1):
+        super().__init__(cantidad)
+        self.codigo = 207
+        self.nombre = 'remache'
+        self.cargarPrecio()
+
+class AntiRuido(InsumoCntd):
+    def __init__(self, cantidad=1):
+        super().__init__(cantidad)
+        self.codigo = 208
+        self.nombre = 'Anti-ruido'
+        self.cargarPrecio()
+
+class ParTJ(InsumoCntd):
+    def __init__(self, cantidad=1):
+        super().__init__(cantidad)
+        self.codigo = 209
+        self.nombre = 'Par T-J'
+        self.cargarPrecio()
+
+## clases del modelo de la ventana ##
 class Hoja:
-    def __init__(self, ancho, alto, nivel_calidad):
+    def __init__(self, ancho, alto, calidad):
         self.ancho = ancho
         self.alto = alto
-        self.nivel_calidad = nivel_calidad
-        self.umbral = Perfil('p_dintel_umbral', self.nivel_calidad, self.ancho*2 - 0.2)
-        self.parante_cen = Perfil('p_parante_central', self.nivel_calidad, self.alto)
-        self.parante_lat = Perfil('p_parante_lateral', self.nivel_calidad, self.alto)
-        self.panel_vidrio = Panel_vidrio( (self.ancho - 0.16)*(self.alto - 0.16) )
-        self.rueda = Rueda(2)
+        self.calidad = calidad
+        self.metros_vidrio = (self.ancho + .02)*(self.alto - .08)
+        self.perfiles = Perfil(self.calidad, self.ancho*2, 1002), Perfil(self.calidad, self.alto, 1003), Perfil(self.calidad, self.alto, 1004)
         self.tirafondo = Tirafondo(4)
+        self.rueda = Rueda(2)
+        self.vidrio = Vidrio(self.calidad, self.metros_vidrio)
         self.burlete = Burlete(self.ancho*2 + self.alto*2)
         self.felpa = Felpa(self.alto*3 + self.ancho*2)
-    def calcular_precio(self):
-        umbral_dintel = self.umbral.calcular_precio()
-        parante_c = self.parante_cen.calcular_precio()
-        parante_l = self.parante_lat.calcular_precio()
-        vidrio = self.panel_vidrio.calcular_precio()
-        ruedas = self.rueda.calcular_precio()
-        tirafondos = self.tirafondo.calcular_precio()
-        burlete = self.burlete.calcular_precio()
-        felpa = self.felpa.calcular_precio()
-        return umbral_dintel+parante_c+parante_l+vidrio+ruedas+tirafondos+burlete+felpa
+        self.partj = ParTJ(4)
+        self.antiruido = AntiRuido(4)
 
+    def calcularPrecio(self):
+        perfiles = sum(p.calcularPrecio() for p in self.perfiles)
+        tirafondos = self.tirafondo.calcularPrecio()
+        ruedas = self.rueda.calcularPrecio()
+        vidrio = self.vidrio.calcularPrecio()
+        burlete = self.burlete.calcularPrecio()
+        felpa = self.felpa.calcularPrecio()
+        partj = self.partj.calcularPrecio()
+        antiruido = self.antiruido.calcularPrecio()
+        return perfiles + tirafondos + ruedas + vidrio + burlete + felpa + partj + antiruido
 
 class Marco:
-    def __init__(self, ancho, alto, nivel_calidad):
+    def __init__(self, ancho, alto, calidad):
         self.ancho = ancho
         self.alto = alto
-        self.nivel_calidad = nivel_calidad
-        self.perfil = Perfil('p_marco', self.nivel_calidad, self.ancho*2 + self.alto*2)
-        self.hoja_x_2 = Hoja(self.ancho/2 - 0.094, self.alto - 0.06, self.nivel_calidad)
-        self.remache = Remache(32)
+        self.calidad = calidad
+
+        self.perfil = Perfil(self.calidad, (self.ancho)*2 + (self.alto)*2, 1001)
         self.escuadra = Escuadra(4)
+        self.remache = Remache(32)
+        self.hojas = [Hoja(self.ancho/2 - .094, self.alto - .06, self.calidad) for _ in range(2)]
+    
+    def calcularPrecio(self):
+        perfil = self.perfil.calcularPrecio()
+        escuadra = self.escuadra.calcularPrecio()
+        remache = self.remache.calcularPrecio()
+        hojas = sum(h.calcularPrecio() for h in self.hojas)
+        return perfil + escuadra + remache + hojas
 
-    def calcular_precio(self):
-        perfil = self.perfil.calcular_precio()
-        hojas = self.hoja_x_2.calcular_precio()*2
-        remaches = self.remache.calcular_precio()
-        escuadras = self.escuadra.calcular_precio()
-
-        return  perfil + hojas + remaches + escuadras
-
-
-
-class Ventana:
-    def __init__(self, ancho, alto, nivel_calidad):
+class Ventana:    
+    def __init__(self, ancho, alto, calidad):
         self.ancho = ancho
         self.alto = alto
-        self.nivel_calidad = nivel_calidad
-        self.marco = Marco(self.ancho, self.alto, self.nivel_calidad)
+        self.calidad = calidad
+
+        self.cierre = Cierre(1)
+        self.marco = Marco(self.ancho, self.alto, self.calidad)
     
-    def calcular_precio(self):
-        return round( self.marco.calcular_precio(), 2)
+    def calcularPrecio(self):
+        return round( self.marco.calcularPrecio() + self.cierre.calcularPrecio(), 2)
 
