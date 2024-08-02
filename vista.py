@@ -1,19 +1,22 @@
 import tkinter as tk
 from tkinter import ttk
-import customtkinter as ctk
 
 
 
 
 
 class Principal:
-    def __init__(self, root, matriz_precios, controlador):
+    def __init__(self, root, margen1, margen2, matriz_precios, controlador):
         self.controlador = controlador
         self.root = root
         self.calidades = ['Eco.','Refor.']
         self.varAncho = tk.DoubleVar(value=1.0)
         self.varAlto = tk.DoubleVar(value=1.0)
         self.varCosto = tk.DoubleVar(value=0.0)
+        self.valorMargen1 = tk.DoubleVar(value=0.0)
+        self.valorMargen2 = tk.DoubleVar(value=0.0)
+        self.poercentMargen1 = tk.DoubleVar(value=margen1)
+        self.poercentMargen2 = tk.DoubleVar(value=margen2)
         self.columnas = ('Ancho','Alto','Eco.','Refor.')
         self.matriz_precios = matriz_precios
         
@@ -26,7 +29,7 @@ class Principal:
         
         ### frame de entrada de datos para calcular costos #######
         self.frameCalcular = tk.Frame(self.frame, height=30, background='gray36')
-        self.frameCalcular.place(anchor='n', rely= .12, relx=.5, relwidth=1, relheight=.35)
+        self.frameCalcular.place(anchor='n', rely= .08, relx=.5, relwidth=1, relheight=.28)
 
         self.etiquetaAncho = tk.Label(self.frameCalcular, text='Ancho:',font='arial 16 bold', background='gray36', fg='white').place(anchor='ne',relx=.25, rely=.15,)
         self.etiquetaAlto = tk.Label(self.frameCalcular, text='Alto:',font='arial 16 bold', background='gray36', fg='white').place(anchor='ne',relx=.25, rely=.6,)
@@ -40,21 +43,38 @@ class Principal:
         self.comboCalidad.set(self.calidades[0])
 
         ### etiqueta de costo y boton calcular  ####
-        self.etiquetaCosto = tk.Label(self.frame, text='COSTO: $', font='arial 17 bold', bg='white').place(relx=.05, rely=.48)
+        self.etiquetaCosto = tk.Label(self.frame, text='COSTO: $', font='arial 17 bold', bg='white').place(relx=.05, rely=.38)
         self.etiquetaValorCosto = tk.Label(self.frame, textvariable=self.varCosto, font='arial 17', anchor='w', bg='white')
-        self.etiquetaValorCosto.place(anchor='nw', relx=.35, rely=.48, relwidth=.35)
+        self.etiquetaValorCosto.place(anchor='nw', relx=.35, rely=.38, relwidth=.35)
 
         self.botonCalcular = tk.Button(self.frame, text='Calcular', font='arial 12 bold', command=self.controlador.calcular_costo)
-        self.botonCalcular.place(anchor='ne', relx=.95, rely=.48)
+        self.botonCalcular.place(anchor='ne', relx=.95, rely=.38)
+
+        ### precios con margenes de beneficio #### ########################################################################################################
+        self.etiquetaMargen1 = tk.Label(self.frame, text='MARGEN 1: $', font='arial 16', bg='white').place(relx=.03, rely=.45)
+        self.etiquetaValorMargen1 = tk.Label(self.frame, textvariable=self.valorMargen1, font='arial 16', anchor='w', bg='white')
+        self.etiquetaValorMargen1.place(anchor='nw', relx=.4, rely=.45, relwidth=.31)
+        self.entryMargen1 = tk.Entry(self.frame, textvariable=self.poercentMargen1, font='arial 13', justify='right').place(relx=.72 ,rely=.45, relwidth=.15)
+        self.etiquetaPorcentaje1 = tk.Label(self.frame, text='%',font='arial 14', bg='white').place(relx=.88,rely=.45)
+
+        self.etiquetaMargen2 = tk.Label(self.frame, text='MARGEN 2: $', font='arial 16', bg='white').place(relx=.03, rely=.52)
+        self.etiquetaValorMargen2 = tk.Label(self.frame, textvariable=self.valorMargen2, font='arial 16', anchor='w', bg='white')
+        self.etiquetaValorMargen2.place(anchor='nw', relx=.4, rely=.52, relwidth=.31)
+        self.entryMargen2 = tk.Entry(self.frame, textvariable=self.poercentMargen2, font='arial 13', justify='right').place(relx=.72 ,rely=.52, relwidth=.15)
+        self.etiquetaPorcentaje2 = tk.Label(self.frame, text='%',font='arial 14', bg='white').place(relx=.88,rely=.52)
+
+        self.botonGuardarPorcentajes = tk.Button(self.frame, text='Guardar %', font='arial 12', command=self.guardar_porcentajes).place(relx=.72, rely=.57, relwidth=.22, relheight=.043)
+
+
 
         #### frame de espacio de separacion ####
-        self.frameEspacio = tk.Frame(self.frame,  bg='gray36').place(anchor='center', relx=.5, rely=.57, relwidth=1, relheight=.02)
+        self.frameEspacio = tk.Frame(self.frame,  bg='gray36').place(anchor='center', relx=.5, rely=.64, relwidth=1, relheight=.02)
         #### medidas comunes   ####
-        self.etiquetaMedidasComunes = tk.Label(self.frame, text='Medidas comunes:', font='arial 12 bold', bg='white').place(relx=.05, rely=.58)
+        self.etiquetaMedidasComunes = tk.Label(self.frame, text='Medidas comunes:', font='arial 12 bold', bg='white').place(relx=.05, rely=.66)
 
         self.tablaPrecios = ttk.Treeview(self.frame, columns=self.columnas, show='headings')
         self.configurarTablaPrecios()
-        self.tablaPrecios.place(anchor='n', relx=.5, rely=.64, relwidth=.95, relheight=.34)
+        self.tablaPrecios.place(anchor='n', relx=.5, rely=.72, relwidth=.95, relheight=.26)
         
     def mostrar(self):
         self.frame.pack(fill='both', expand=True)
@@ -71,8 +91,30 @@ class Principal:
         calidad = 1 if self.comboCalidad.get() == 'Eco.' else 2
         return (ancho, alto, calidad)
 
+    def get_porcentaje1(self):
+        porcentaje = 0
+        try:
+            return self.poercentMargen1.get()
+        except:
+            return porcentaje 
+    
+    def get_porcentaje2(self):
+        porcentaje = 0
+        try:
+            return self.poercentMargen2.get()
+        except:
+            return porcentaje 
+    
+
+
     def mostrar_precio(self, precio):
         self.varCosto.set(value=precio)
+
+    def mostrar_precio_porc1(self, precio):
+        self.valorMargen1.set(precio)
+    def mostrar_precio_porc2(self, precio):
+        self.valorMargen2.set(precio)
+     
 
     def configurarTablaPrecios(self):
         for col in self.columnas:
@@ -82,7 +124,18 @@ class Principal:
         for fila in self.matriz_precios:
             self.tablaPrecios.insert('', tk.END, values=fila)
 
-    
+    def guardar_porcentajes(self):
+        porcentaje1 = 0
+        porcentaje2 = 0
+
+        try:
+            porcentaje1 = self.poercentMargen1.get()
+            porcentaje2 = self.poercentMargen2.get()
+            self.controlador.guardar_porcentajes(porcentaje1, porcentaje2)
+        except:
+            pass
+
+
 
 
 

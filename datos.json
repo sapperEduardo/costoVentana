@@ -1,5 +1,7 @@
 {
- "precio_kg_aluminio": 7900.0,
+ "precio_kg_aluminio": 8000.0,
+ "porcentaje_de_margen1": 15.0,
+ "porcentaje_de_margen2": 30.0,
  "insumos": [
   {
    "codigo": 200,
@@ -17,7 +19,7 @@
    "codigo": 202,
    "nombre": "vidrio 3mm",
    "calidad": 1,
-   "precio": 14000.0
+   "precio": 15000.0
   },
   {
    "codigo": 202,
@@ -41,31 +43,31 @@
    "codigo": 205,
    "nombre": "tirafondo",
    "calidad": 1,
-   "precio": 1.0
+   "precio": 30.0
   },
   {
    "codigo": 206,
    "nombre": "escuadra",
    "calidad": 1,
-   "precio": 1.0
+   "precio": 30.0
   },
   {
    "codigo": 207,
    "nombre": "remache",
    "calidad": 1,
-   "precio": 1.0
+   "precio": 30.0
   },
   {
    "codigo": 208,
    "nombre": "Anti-Ruido",
    "calidad": 1,
-   "precio": 1.0
+   "precio": 30.0
   },
   {
    "codigo": 209,
    "nombre": "Par T-J",
    "calidad": 1,
-   "precio": 1.0
+   "precio": 30.0
   }
  ],
  "perfiles_aluminio": [

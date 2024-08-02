@@ -42,6 +42,13 @@ class Coneccion:
             if 202 == insumo["codigo"] and calidad == insumo["calidad"]: 
                 return insumo["nombre"]
             
+    def obtenerMargen1(cls):
+        return cls.Datos["porcentaje_de_margen1"]
+    def obtenerMargen2(cls):
+        return cls.Datos["porcentaje_de_margen2"]
+
+
+            
     ### metodos para actualizar precios de los insumos ###
     def actualizarPrecioAluminio(cls, nuevo_precio_kg_aluminio):
         cls.Datos['precio_kg_aluminio'] = nuevo_precio_kg_aluminio
@@ -58,6 +65,11 @@ class Coneccion:
                 insumo['precio'] = nuevo_precio
                 break
 
+    
+    def actualizarMargen1(cls, nuevo_margen):
+        cls.Datos['porcentaje_de_margen1'] = nuevo_margen
+    def actualizarMargen2(cls, nuevo_margen):
+        cls.Datos['porcentaje_de_margen2'] = nuevo_margen
 
 
 
